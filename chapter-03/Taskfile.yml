@@ -1,0 +1,44 @@
+version: '3'
+
+vars:
+  TF_DIR: "."
+
+tasks:
+  init:
+    desc: Initialize Terraform
+    cmds:
+      - terraform -chdir={{.TF_DIR}} init
+
+  fmt:
+    desc: Format HCL code
+    cmds:
+      - terraform -chdir={{.TF_DIR}} fmt -recursive
+
+  validate:
+    desc: Validate Terraform and Run TFLint
+    cmds:
+      - terraform -chdir={{.TF_DIR}} validate
+      - tflint --chdir {{.TF_DIR}}
+
+  docs:
+    desc: Generate Terraform documentation
+    cmds:
+      - terraform-docs markdown table {{.TF_DIR}} > {{.TF_DIR}}/README.md
+
+  plan:
+    desc: Generate an execution plan
+    cmds:
+      - terraform -chdir={{.TF_DIR}} plan -out=plan.tfplan
+
+  apply:
+    desc: Apply the changes
+    cmds:
+      - terraform -chdir={{.TF_DIR}} apply -auto-approve plan.tfplan
+
+  clean:
+    desc: Destroy local artifacts
+    cmds:
+      - rm -rf {{.TF_DIR}}/.terraform/
+      - rm -f {{.TF_DIR}}/terraform.tfstate*
+      - rm -f {{.TF_DIR}}/plan.tfplan
+      - rm -f {{.TF_DIR}}/welcome.txt
